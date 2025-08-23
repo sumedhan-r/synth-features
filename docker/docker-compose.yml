@@ -1,0 +1,18 @@
+services:
+  backend:
+    container_name: synth-features-backend
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "0.0.0.0:8100:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT}/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      - ENV=LOCAL
+    command:
+      - --reload

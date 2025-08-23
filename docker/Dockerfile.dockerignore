@@ -1,0 +1,11 @@
+## Ignore ALL by default
+**
+
+## Allow following files and directories
+!configs/
+!configs/**/*.yaml
+!poetry.lock
+!pyproject.toml
+!scripts/**/*.py
+!scripts/**/*.sh
+!src/
