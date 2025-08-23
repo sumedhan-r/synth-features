@@ -1,24 +1,24 @@
-[project]
+[tool.poetry]
 name = "synth-features"
 version = "0.1.0"
-description = "This project contains software synthesizer features that are experimental and capable of deploymen"
-authors = [
-    {name = "Sumedhan Ramesh",email = "sumedhanramesh2012@gmail.com"}
-]
+description = "This project contains software synthesizer features that are experimental and capable of deployment"
+authors = ["Sumedhan Ramesh <sumedhanramesh2012@gmail.com>"]
 readme = "README.md"
-packages = [{include = "src/api"}]
+packages = [{include = "src"}]
 
 
 [tool.poetry.dependencies]
 asyncpg = "^0.29.0"
 fastapi = "^0.115.6"
 httpx = {version = "0.28.1", extras = ["socks"]}
+opentelemetry-instrumentation = "^0.57b0"
 pandas = "^2.2.3"
 pydantic-settings = "^2.1.0"
 python = ">=3.10.0,<3.12"
 pyyaml = "^6.0.1"
 sse-starlette = "^1.6.5"
 starlette = ">=0.36.2"
+structlog = "^25.4.0"
 uvicorn = "^0.23.2"
 
 [tool.poetry.group.dev.dependencies]
