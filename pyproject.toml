@@ -1,0 +1,39 @@
+[project]
+name = "synth-features"
+version = "0.1.0"
+description = "This project contains software synthesizer features that are experimental and capable of deploymen"
+authors = [
+    {name = "Sumedhan Ramesh",email = "sumedhanramesh2012@gmail.com"}
+]
+readme = "README.md"
+packages = [{include = "src/api"}]
+
+
+[tool.poetry.dependencies]
+asyncpg = "^0.29.0"
+fastapi = "^0.115.6"
+httpx = {version = "0.28.1", extras = ["socks"]}
+pandas = "^2.2.3"
+pydantic-settings = "^2.1.0"
+python = ">=3.10.0,<3.12"
+pyyaml = "^6.0.1"
+sse-starlette = "^1.6.5"
+starlette = ">=0.36.2"
+uvicorn = "^0.23.2"
+
+[tool.poetry.group.dev.dependencies]
+alembic = "^1.16.4"
+pre-commit = "^4.3.0"
+mypy = "^1.17.1"
+ruff = "^0.12.10"
+pytest = "^8.4.1"
+pytest-asyncio = "^1.1.0"
+pytest-cov = "^6.2.1"
+pytest-env = "^1.1.5"
+pytest-mock = "^3.14.1"
+types-pyyaml = "^6.0.12.20250822"
+types-requests = "^2.32.4.20250809"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
