@@ -208,3 +208,6 @@ __marimo__/
 
 # AI coding agent (Claude)
 **/Claude.md
+
+# VS Code
+.vscode/*
