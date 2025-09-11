@@ -36,7 +36,6 @@ config.set_main_option("sqlalchemy.url", postgres_url)
 engine = create_engine(config.get_main_option("sqlalchemy.url", "dummy_sqlalchemy_url"))
 
 
-
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
