@@ -73,12 +73,12 @@ def configure_logging() -> None:
     logging.basicConfig(level=log_level, handlers=[handler], force=True)
 
     # Suppress noisy Azure loggers
-    logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
-        logging.WARNING
-    )
-    logging.getLogger("azure.monitor.opentelemetry.exporter.export._base").setLevel(
-        logging.WARNING
-    )
+    # logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
+    #     logging.WARNING
+    # )
+    # logging.getLogger("azure.monitor.opentelemetry.exporter.export._base").setLevel(
+    #     logging.WARNING
+    # )
 
 
 # Flag to track if logging has been configured
