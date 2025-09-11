@@ -60,7 +60,6 @@ RUN chown music_tech_user:music_tech_group /${WORK_DIR}
 USER music_tech_user
 
 # Copy the rest of the application code into the container
-#ensure to not use --chown flag when user only need execution permission(security ci pipeline)
 
 COPY . /${WORK_DIR}
 
