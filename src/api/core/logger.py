@@ -21,7 +21,7 @@ def add_opentelemetry_context(
         event_dict["span_id"] = format(span_context.span_id, "016x")
 
     # Add service name from environment
-    service_name = os.getenv("SERVICE_NAME", "rakutenai-backend")
+    service_name = os.getenv("SERVICE_NAME", "synth-features")
     event_dict["service_name"] = service_name
 
     return event_dict
