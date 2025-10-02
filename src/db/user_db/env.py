@@ -1,13 +1,12 @@
 import os
 from logging.config import fileConfig
-from typing import Final
 
 from alembic import context
 from sqlalchemy import create_engine, engine_from_config, pool
 from sqlalchemy.exc import OperationalError
 
 from src.api.core.logger import get_logger
-from src.db.client_db.models.base import Base
+from src.db.user_db.models.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,15 +22,22 @@ target_metadata = Base.metadata
 
 logger = get_logger(__name__)
 
-DB_HOST: Final[str] = os.getenv("POSTGRES_HOST", "localhost")
-DB_PORT: Final[str] = os.getenv("POSTGRES_PORT", "5432")
-DB_USER: Final[str] = os.getenv("POSTGRES_USER", "dummy")
-DB_PASSWORD: Final[str] = os.getenv("POSTGRES_PASSWORD", "dummy")
-DB_NAME: Final[str] = os.getenv("POSTGRES_DB", "admin_db")
+# Database-agnostic URL from environment variable
+# Supports: PostgreSQL, MySQL, SQLite, etc.
+# Must be set via environment variable or docker-compose
+# Example URLs:
+# - PostgreSQL: postgresql://user:pass@localhost:5432/dbname
+# - MySQL: mysql+pymysql://user:pass@localhost:3306/dbname
+# - SQLite: sqlite:///path/to/database.db
+database_url = os.getenv("DATABASE_URL")
 
-postgres_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if not database_url:
+    raise ValueError(
+        "DATABASE_URL environment variable must be set. "
+        "Pass it via docker-compose or export DATABASE_URL='your_database_url'"
+    )
 
-config.set_main_option("sqlalchemy.url", postgres_url)
+config.set_main_option("sqlalchemy.url", database_url)
 
 engine = create_engine(config.get_main_option("sqlalchemy.url", "dummy_sqlalchemy_url"))
 

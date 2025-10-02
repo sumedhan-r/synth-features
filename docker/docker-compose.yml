@@ -1,4 +1,51 @@
+# Usage: Choose a database profile when running docker-compose
+#
+# PostgreSQL:  docker-compose --profile postgres up
+# MySQL:       docker-compose --profile mysql up
+# SQLite:      docker-compose --profile sqlite up
+# No DB:       docker-compose up (backend only, no database)
+
 services:
+  # PostgreSQL database service
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:16-alpine
+    container_name: synth-features-postgres
+    environment:
+      - POSTGRES_USER=synth_user
+      - POSTGRES_PASSWORD=synth_password
+      - POSTGRES_DB=synth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synth_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL database service
+  mysql:
+    profiles: ["mysql"]
+    image: mysql:8.0
+    container_name: synth-features-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=synth_db
+      - MYSQL_USER=synth_user
+      - MYSQL_PASSWORD=synth_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend service (always runs)
   backend:
     container_name: synth-features-backend
     build:
@@ -14,5 +61,24 @@ services:
       start_period: 10s
     environment:
       - ENV=LOCAL
+      # Database URL - set based on active profile
+      # PostgreSQL: postgresql://synth_user:synth_password@postgres:5432/synth_db
+      # MySQL:      mysql+pymysql://synth_user:synth_password@mysql:3306/synth_db
+      # SQLite:     sqlite:////app/data/synth.db
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/synth.db}
+    volumes:
+      - sqlite_data:/app/data  # For SQLite persistence
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+      mysql:
+        condition: service_healthy
+        required: false
     command:
       - --reload
+
+volumes:
+  postgres_data:
+  mysql_data:
+  sqlite_data:

@@ -8,19 +8,54 @@ packages = [{include = "src"}]
 
 
 [tool.poetry.dependencies]
-asyncpg = "^0.29.0"
+# Core dependencies
 fastapi = "^0.115.6"
 httpx = {version = "0.28.1", extras = ["socks"]}
-opentelemetry-instrumentation = "^0.57b0"
 pandas = "^2.2.3"
 pydantic-settings = "^2.1.0"
-python = ">=3.10.0,<3.12"
+python = ">=3.11,<3.12"
 pyyaml = "^6.0.1"
 sse-starlette = "^1.6.5"
 starlette = ">=0.36.2"
 structlog = "^25.4.0"
 uvicorn = "^0.23.2"
 pedalboard = "^0.9.17"
+numpy = "^2.3.3"
+scipy = "^1.16.2"
+ipykernel = "^6.30.1"
+jupyter = "^1.1.1"
+matplotlib = "^3.10.6"
+
+# Database drivers (all included for database-agnostic support)
+asyncpg = "^0.29.0"  # PostgreSQL async driver
+psycopg2-binary = "^2.9.9"  # PostgreSQL sync driver
+pymysql = "^1.1.0"  # MySQL driver
+aiomysql = "^0.2.0"  # MySQL async driver
+aiosqlite = "^0.20.0"  # SQLite async driver
+sqlalchemy = "^2.0.36"  # ORM for all databases
+
+# OpenTelemetry - Core
+opentelemetry-api = "^1.30.0"
+opentelemetry-sdk = "^1.30.0"
+opentelemetry-instrumentation = "^0.57b0"
+
+# OpenTelemetry - Instrumentation
+opentelemetry-instrumentation-fastapi = "^0.57b0"
+opentelemetry-instrumentation-httpx = "^0.57b0"
+opentelemetry-instrumentation-asyncpg = "^0.57b0"
+opentelemetry-instrumentation-psycopg2 = "^0.57b0"
+opentelemetry-instrumentation-pymysql = "^0.57b0"
+opentelemetry-instrumentation-sqlalchemy = "^0.57b0"
+opentelemetry-instrumentation-requests = "^0.57b0"
+opentelemetry-instrumentation-system-metrics = "^0.57b0"
+opentelemetry-instrumentation-threading = "^0.57b0"
+opentelemetry-instrumentation-urllib = "^0.57b0"
+opentelemetry-instrumentation-urllib3 = "^0.57b0"
+
+# OpenTelemetry - Exporters
+opentelemetry-exporter-otlp = "^1.30.0"
+opentelemetry-exporter-zipkin-json = "^1.30.0"
+opentelemetry-exporter-prometheus = "^0.57b0"
 
 [tool.poetry.group.dev.dependencies]
 alembic = "^1.16.4"
@@ -34,6 +69,15 @@ pytest-env = "^1.1.5"
 pytest-mock = "^3.14.1"
 types-pyyaml = "^6.0.12.20250822"
 types-requests = "^2.32.4.20250809"
+nbqa = "^1.9.1"
+black = "^25.9.0"
+
+[tool.poetry.group.secrets.dependencies]
+# Cloud SDK dependencies for secret management
+azure-keyvault-secrets = "^4.8.0"
+azure-identity = "^1.15.0"
+boto3 = "^1.34.0"
+google-cloud-secret-manager = "^2.18.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

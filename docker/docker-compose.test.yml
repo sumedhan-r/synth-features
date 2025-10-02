@@ -1,0 +1,30 @@
+services:
+  unit-test:
+    image: synth-features-unit-test
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test
+    healthcheck:
+      test: ["CMD", "sh", "-c", "pgrep", "-f", "pytest > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    container_name: unit-test
+    environment:
+      - PYTHONPATH=./src
+      - ENV=test
+    volumes:
+      - ../test/coverage/unit:/test/coverage/unit
+    command:
+      [
+        "pytest",
+        "--disable-warnings",
+        "--cov",
+        "--cov-branch",
+        "--cov-report",
+        "html:/test/coverage/unit",
+        "-m",
+        "unit",
+        "--ignore=test/integration",
+      ]

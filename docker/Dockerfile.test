@@ -1,6 +1,4 @@
-# Default ARG values for the stages.
-ARG WORK_DIR=synth-features \
-    API_PORT=8000
+ARG WORK_DIR=test
 
 # The builder image, used to build the virtual environment
 FROM python:3.11-slim AS builder
@@ -38,10 +36,10 @@ WORKDIR /${WORK_DIR}
 
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --only main --no-root \
+RUN poetry install --with dev --no-root \
     && rm -rf ${POETRY_CACHE_DIR}
 
-# The runtime image, used to just run the code provided its virtual environment
+# The runtime image, used to just run the tests provided its virtual environment
 FROM python:3.11-slim AS runtime
 
 ARG WORK_DIR API_PORT
@@ -51,7 +49,6 @@ ENV TZ=Asia/Tokyo \
     PATH="/${WORK_DIR}/.venv/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
     libasound2 \
     libportaudio2 \
     libsndfile1 \
@@ -59,28 +56,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-# Create a non-root user and group
 RUN addgroup --system music_tech_group \
     && adduser --system --ingroup music_tech_group --home /${WORK_DIR} music_tech_user
 
 RUN chown music_tech_user:music_tech_group /${WORK_DIR}
 
-# Switch to the non-root user
 USER music_tech_user
 
-# Copy the rest of the application code into the container
-
-COPY . /${WORK_DIR}
+COPY --chown=music_tech_user:music_tech_group . /${WORK_DIR}
 
 WORKDIR /${WORK_DIR}
 
-# Expose the port your FastAPI app listens on
-EXPOSE ${API_PORT}
+COPY . .
+COPY test/pytest.ini .
 
-ENV PYTHONPATH="/${WORK_DIR}/src" \
-    API_PORT=${API_PORT} \
-    ENV=${ENV}
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://localhost:${API_PORT}/health/
-
-ENTRYPOINT ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${API_PORT}"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+   CMD ["sh", "-c", "pgrep -f 'pytest' > /dev/null || exit 1"]

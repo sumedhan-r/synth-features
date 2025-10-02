@@ -27,6 +27,12 @@ class Synthesizer:
     The low pass filter and cumulator is represented using Moving Average since the
     two are similar, although a Virtual Low pass filter can be used for the Algorithm
     as well.
+
+    The musical sounds are generated from the sound amplitudes using Spotify's PedalBoard
+    library. The library contains methods to convert sound amplitudes to aduio files such as
+
+        - LPCM (Linear Pulse-Code Modulation)
+        - MP3 Lossy compression
     """
 
     burst_generator: BurstGenerator = WhiteNoise()

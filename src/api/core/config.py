@@ -1,10 +1,12 @@
 """Module to manage the configuration of this project."""
 
 # mypy: disable_error_code="call-arg"
+import asyncio
 import os
 from functools import cache
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -13,6 +15,7 @@ from pydantic_settings import (
 )
 
 from src.api.core.logger import get_logger
+from src.api.core.secrets import get_secret, initialize_secret_manager
 
 logger = get_logger(__name__)
 
@@ -20,50 +23,20 @@ ENV = os.getenv("ENV", "LOCAL")
 logger.info(f"Setting up for {ENV} environment")
 CONFIG_DIR = "configs"
 CONFIG_YAML_DIR = f"{CONFIG_DIR}/{ENV.lower()}.config.yaml"
-global_azure_vault_url: str | None = None  # To suppress mypy
 
 
-# def get_secret(secret_reference: str, azure_vault_url: str | None = None) -> str | None:
-#     """Retrieves a secret from the secret manager.
+def get_secret_from_platform(value: Any) -> Any:
+    """Resolve secret references using the platform-configured secret manager."""
+    if not isinstance(value, str) or not value.startswith("secret:"):
+        return value
 
-#         The pattern of the secret_reference is <secret_source>:<secret_name>.
-#         For Azure Keyvault the <secret_source> is azure_kv. If there is no
-#         <secret_source> passed, the function will return an error.
-
-#         To add new secret source, update the match condition of this function
-#         to match the new source name.
-
-#     Args:
-#         secret_reference (str): The value following the pattern
-#             <secret_source>:<secret_name> (e.g. azure_kv:<secret_name>).
-#         azure_vault_url (Optional[str]): Azure Keyvault URL. If provided,
-#             this will be used instead of the global_azure_vault_url.
-
-#     Returns:
-#         str: The secret value retrieved from the secrets source.
-
-#     Global Variables:
-#         global_azure_vault_url (str): Azure Keyvault URL. Set when we initialize the
-#             Settings class.
-#     """
-#     match secret_reference.split(":"):
-#         case ["azure_kv", secret_name]:
-#             effective_vault_url = azure_vault_url or global_azure_vault_url
-#             if effective_vault_url is None:
-#                 error_message = (
-#                     "Azure vault_url is None. Please ensure the vault_url "
-#                     "is set to retrieve secrets from Azure."
-#                 )
-#                 logger.error(error_message)
-#                 raise ValueError(error_message)
-#             secrets_manager = AzureSecretsManager(vault_url=effective_vault_url)
-#             return secrets_manager.get_secret(secret_name=secret_name)
-#         case _:
-#             error_message = (
-#                 "Please use a secret source (e.g. azure_kv) to refer to a secret value."
-#             )
-#             logger.error(error_message)
-#             raise ValueError(error_message)
+    secret_ref = value.replace("secret:", "", 1)
+    try:
+        secret_value = asyncio.run(get_secret(secret_ref))
+        return secret_value or value
+    except Exception as e:
+        logger.warning(f"Failed to resolve secret '{secret_ref}': {e}")
+        return value
 
 
 class GuitarConfig(BaseModel):
@@ -77,19 +50,63 @@ class GuitarConfig(BaseModel):
     high_e: float
 
 
+class PlatformConfig(BaseModel):
+    """Config for deployment platform services."""
+
+    deployment_platform: str | None
+    azure_vault_url: str | None
+    azure_resource_group: str | None
+    aws_region: str | None
+    aws_account_id: str | None
+    gcp_project_id: str | None
+    gcp_region: str | None
+
+
+class TracingConfig(BaseModel):
+    """Config for distributed tracing - platform agnostic."""
+
+    enabled: bool
+    service_name: str
+    service_version: str
+    sampling_ratio: float
+    sampling_type: str
+    exporter_type: str
+    exporter_endpoint: str | None
+    exporter_headers: dict[str, str]
+    resource_attributes: dict[str, str]
+
+    # Resolve secrets in exporter_headers
+    @field_validator("exporter_headers", mode="before")
+    @classmethod
+    def resolve_header_secrets(cls, v: dict[str, str]) -> dict[str, str]:
+        """Resolve secret references in exporter headers."""
+        if not isinstance(v, dict):
+            return v
+        return {key: get_secret_from_platform(value) for key, value in v.items()}
+
+
 class Config(BaseSettings):
     """Master config that combines all the settings to one object."""
 
     guitar: GuitarConfig
+    platform: PlatformConfig
+    tracing: TracingConfig
     model_config = SettingsConfigDict(yaml_file=CONFIG_YAML_DIR, extra="ignore")
 
-    # @model_validator(mode="before")
-    # @classmethod
-    # def set_vault_url(cls: type["Config"], values: dict) -> dict:
-    #     """Sets the vault_url to a global variable so it can be used in get_secret."""
-    #     global global_azure_vault_url  # noqa: PLW0603
-    #     global_azure_vault_url = values.get("azure_keyvault_url")
-    #     return values
+    @model_validator(mode="before")
+    @classmethod
+    def initialize_platform_services(cls, values: dict) -> dict:
+        """Initialize platform-specific services before field validation."""
+        if isinstance(values, dict) and "platform" in values:
+            platform_config = values["platform"]
+            if isinstance(platform_config, dict):
+                initialize_secret_manager(
+                    platform=platform_config.get("deployment_platform"),
+                    azure_vault_url=platform_config.get("azure_vault_url"),
+                    aws_region=platform_config.get("aws_region"),
+                    gcp_project_id=platform_config.get("gcp_project_id"),
+                )
+        return values
 
     @classmethod
     def settings_customise_sources(
@@ -120,5 +137,6 @@ def get_config() -> Config:
 
     This is done so that the config is not initialized every time the module is
     imported. By doing this, it is easier to mock the config in tests.
+    Platform services are automatically initialized via model validator.
     """
     return Config()

@@ -5,3 +5,81 @@ guitar:
   g: 196.00
   b: 246.94
   high_e: 329.63
+
+# Deployment Platform Configuration
+# Configures platform-specific services (secrets, monitoring, storage, etc.)
+# Override with environment variables: DEPLOYMENT_PLATFORM, AZURE_KEY_VAULT_URL, etc.
+platform:
+  # Deployment platform: azure, aws, gcp, local, or null for auto-detection
+  deployment_platform: null  # null = auto-detect based on available configuration
+  
+  # Azure platform configuration
+  azure_vault_url: null  # Azure Key Vault URL
+  azure_resource_group: null  # Azure Resource Group
+  
+  # AWS platform configuration  
+  aws_region: null  # AWS Region
+  aws_account_id: null  # AWS Account ID
+  
+  # GCP platform configuration
+  gcp_project_id: null  # GCP Project ID
+  gcp_region: null  # GCP Region
+
+# Distributed Tracing Configuration
+# Real-time modifiable - restart service to apply changes
+# Override with environment variables: TRACING_ENABLED, TRACING_EXPORTER_TYPE, etc.
+tracing:
+  enabled: true
+  service_name: "synth-features"
+  service_version: "1.0.0"
+  
+  # Sampling configuration
+  sampling_ratio: 1.0  # 0.0 to 1.0 (0% to 100%)
+  sampling_type: "ratio"  # ratio, rate_limiting, custom
+  
+  # Supported exporters:
+  # - console: Logs traces to stdout (development)
+  # - otlp: Generic OpenTelemetry Protocol
+  # - jaeger: Direct Jaeger export
+  # - zipkin: Direct Zipkin export
+  # - honeycomb: Honeycomb.io (preconfigured)
+  # - datadog: Datadog APM (preconfigured)
+  # - azure: Azure Application Insights (preconfigured)
+  # - aws: AWS X-Ray (preconfigured)
+  # - gcp: Google Cloud Trace (preconfigured)
+  exporter_type: "console"
+  
+  # Exporter endpoint (required for some exporters)
+  # Cloud providers use defaults if not specified:
+  # - honeycomb: Uses api.honeycomb.io (default)
+  # - datadog: Uses localhost:8126 (default, or specify custom)
+  # - azure: Requires your App Insights OTLP endpoint
+  # - aws: Uses otlp.amazonaws.com (default)
+  # - gcp: Requires project-specific endpoint
+  # - jaeger: "http://localhost:14268/api/traces"
+  # - zipkin: "http://localhost:9411/api/v2/spans"
+  # - otlp: "http://localhost:4317" (gRPC) or "http://localhost:4318/v1/traces" (HTTP)
+  exporter_endpoint: null
+  
+  # Platform-specific authentication headers with secret references:
+  # 
+  # Secret Reference Format: "secret:<manager_type>:<secret_name>" or "secret:<secret_name>"
+  # Manager types: azure_kv, aws, gcp, local (environment variables)
+  #
+  # Examples:
+  # Honeycomb: {"x-honeycomb-team": "secret:honeycomb-api-key", "x-honeycomb-dataset": "secret:honeycomb-dataset"}
+  # Datadog: {"DD-API-KEY": "secret:aws:datadog-api-key"}
+  # Azure: {"instrumentation-key": "secret:azure_kv:app-insights-key"}
+  # AWS: {"x-amzn-trace-id": "secret:aws-trace-key"}
+  # GCP: {"authorization": "secret:gcp:service-account-token"}
+  # Local development: {"api-key": "secret:TRACING_API_KEY"}  # from environment variables
+  #
+  # For local development without platform subscriptions, use environment variables:
+  # export TRACING_API_KEY=your-local-key
+  exporter_headers: {}
+  
+  # Additional resource attributes
+  # Will be added to all telemetry data
+  resource_attributes:
+    deployment.environment: "local"
+    service.namespace: "music-tech"

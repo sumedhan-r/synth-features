@@ -28,5 +28,27 @@ class Time:
             case _:
                 raise TypeError(f"unsupported type '{type(seconds).__name__}'")
 
+    def __add__(self, seconds: Numeric | Self) -> Self:
+        match seconds:
+            case Time() as time:
+                return self.__class__(self.seconds + time.seconds)
+            case int() | Decimal():
+                return self.__class__(self.seconds + seconds)
+            case float():
+                return self.__class__(self.seconds + Decimal(str(seconds)))
+            case Fraction():
+                return self.__class__(Fraction.from_decimal(self.seconds) + seconds)
+            case _:
+                raise TypeError(f"can't add '{type(seconds).__name__}'")
+
     def get_num_samples(self, sampling_rate: Hertz) -> int:
         return round(self.seconds * round(sampling_rate))
+
+
+@dataclass
+class Timeline:
+    instant: Time = Time(seconds=0)
+
+    def __rshift__(self, seconds: Numeric | Time) -> Self:
+        self.instant += seconds
+        return self
