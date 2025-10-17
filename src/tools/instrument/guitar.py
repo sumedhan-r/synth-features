@@ -81,3 +81,8 @@ class PluckedStringInstrument:
             for string, fret_number in zip(self.tuning.strings, chord)
             if fret_number is not None
         )
+
+
+# TO DO : Current plucking of string is deterministic based on fret position and pitch.
+# Future changes need to incorporate sliding of string based on delta of two consecutive
+# notes pitch (frequency values).

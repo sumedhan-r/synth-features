@@ -14,6 +14,10 @@ from src.tools.utils.stroke import StrokeDirection, StrokeVelocity
 from src.api.core.constant import AUDIO_CD_SAMPLING_RATE
 
 
+# keyword_only here implies all class attributes are keyword arguments,
+# thus circumventing invalid arg listing in __init__ during Inheritance.
+# Ordering : (self, *, burst_generator, sampling_rate)
+# Reference - https://www.trueblade.com/blogs/news/python-3-10-new-dataclass-features
 @dataclass(frozen=True, kw_only=True)
 class Synthesizer:
     """
@@ -175,6 +179,10 @@ class Synthesizer:
         return normalize(self._arpeggio_overlay(sounds, delay))
 
 
+# keyword_only here implies all class attributes are keyword arguments,
+# thus circumventing invalid arg listing in __init__ during Inheritance.
+# Ordering : (self, instrument, *, burst_generator, sampling_rate)
+# Reference - https://www.trueblade.com/blogs/news/python-3-10-new-dataclass-features
 @dataclass(frozen=True, kw_only=True)
 class StringSynthesizer(Synthesizer):
     instrument: PluckedStringInstrument

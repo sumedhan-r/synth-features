@@ -1,29 +1,33 @@
-guitar:
-  low_e: 82.41
-  a: 110.00
-  d: 146.83
-  g: 196.00
-  b: 246.94
-  high_e: 329.63
+# String Instrument Presets Configuration
+string_instruments:
+  ukulele:
+    tuning: ["A4", "E4", "C4", "G4"]
+    vibration_seconds: 5.0
+    damping: 0.498
+
+  guitar:
+    tuning: ["E4", "B3", "G3", "D3", "A2", "E2"]
+    vibration_seconds: 6.0
+    damping: 0.495
 
 # Deployment Platform Configuration
 # Configures platform-specific services (secrets, monitoring, storage, etc.)
 # Override with environment variables: DEPLOYMENT_PLATFORM, AZURE_KEY_VAULT_URL, etc.
 platform:
   # Deployment platform: azure, aws, gcp, local, or null for auto-detection
-  deployment_platform: null  # null = auto-detect based on available configuration
-  
+  deployment_platform: null # null = auto-detect based on available configuration
+
   # Azure platform configuration
-  azure_vault_url: null  # Azure Key Vault URL
-  azure_resource_group: null  # Azure Resource Group
-  
-  # AWS platform configuration  
-  aws_region: null  # AWS Region
-  aws_account_id: null  # AWS Account ID
-  
+  azure_vault_url: null # Azure Key Vault URL
+  azure_resource_group: null # Azure Resource Group
+
+  # AWS platform configuration
+  aws_region: null # AWS Region
+  aws_account_id: null # AWS Account ID
+
   # GCP platform configuration
-  gcp_project_id: null  # GCP Project ID
-  gcp_region: null  # GCP Region
+  gcp_project_id: null # GCP Project ID
+  gcp_region: null # GCP Region
 
 # Distributed Tracing Configuration
 # Real-time modifiable - restart service to apply changes
@@ -32,11 +36,11 @@ tracing:
   enabled: true
   service_name: "synth-features"
   service_version: "1.0.0"
-  
+
   # Sampling configuration
-  sampling_ratio: 1.0  # 0.0 to 1.0 (0% to 100%)
-  sampling_type: "ratio"  # ratio, rate_limiting, custom
-  
+  sampling_ratio: 1.0 # 0.0 to 1.0 (0% to 100%)
+  sampling_type: "ratio" # ratio, rate_limiting, custom
+
   # Supported exporters:
   # - console: Logs traces to stdout (development)
   # - otlp: Generic OpenTelemetry Protocol
@@ -48,7 +52,7 @@ tracing:
   # - aws: AWS X-Ray (preconfigured)
   # - gcp: Google Cloud Trace (preconfigured)
   exporter_type: "console"
-  
+
   # Exporter endpoint (required for some exporters)
   # Cloud providers use defaults if not specified:
   # - honeycomb: Uses api.honeycomb.io (default)
@@ -60,9 +64,9 @@ tracing:
   # - zipkin: "http://localhost:9411/api/v2/spans"
   # - otlp: "http://localhost:4317" (gRPC) or "http://localhost:4318/v1/traces" (HTTP)
   exporter_endpoint: null
-  
+
   # Platform-specific authentication headers with secret references:
-  # 
+  #
   # Secret Reference Format: "secret:<manager_type>:<secret_name>" or "secret:<secret_name>"
   # Manager types: azure_kv, aws, gcp, local (environment variables)
   #
@@ -77,7 +81,7 @@ tracing:
   # For local development without platform subscriptions, use environment variables:
   # export TRACING_API_KEY=your-local-key
   exporter_headers: {}
-  
+
   # Additional resource attributes
   # Will be added to all telemetry data
   resource_attributes:

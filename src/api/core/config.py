@@ -39,15 +39,19 @@ def get_secret_from_platform(value: Any) -> Any:
         return value
 
 
-class GuitarConfig(BaseModel):
-    """Config for guitar string frequencies."""
+class StringInstrumentPreset(BaseModel):
+    """Configuration for a string instrument preset."""
 
-    low_e: float
-    a: float
-    d: float
-    g: float
-    b: float
-    high_e: float
+    tuning: list[str]
+    vibration_seconds: float
+    damping: float
+
+
+class StringInstrumentsConfig(BaseModel):
+    """Configuration for all string instrument presets."""
+
+    ukulele: StringInstrumentPreset
+    guitar: StringInstrumentPreset
 
 
 class PlatformConfig(BaseModel):
@@ -88,7 +92,7 @@ class TracingConfig(BaseModel):
 class Config(BaseSettings):
     """Master config that combines all the settings to one object."""
 
-    guitar: GuitarConfig
+    string_instruments: StringInstrumentsConfig
     platform: PlatformConfig
     tracing: TracingConfig
     model_config = SettingsConfigDict(yaml_file=CONFIG_YAML_DIR, extra="ignore")

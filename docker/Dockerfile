@@ -2,6 +2,10 @@
 ARG WORK_DIR=synth-features \
     API_PORT=8000
 
+# Python base image version needs to lie in the python version
+# decided by dependency manager (poetry).
+# [AI Setback]: Runtime execution of Docker build
+
 # The builder image, used to build the virtual environment
 FROM python:3.11-slim AS builder
 

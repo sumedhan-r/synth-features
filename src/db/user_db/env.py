@@ -13,7 +13,12 @@ from src.db.user_db.models.base import Base
 config = context.config
 
 # Interpret the config file for Python logging.
-# This line sets up loggers basically.
+
+# NOTE: Removing the file config is ideal for log formatting since
+# file based configuration overrides custom code implementation.
+# [AI Setback]: Know priority of logging configuration methods
+# (this method is also absent in original python docs)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 

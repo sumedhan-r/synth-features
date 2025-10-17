@@ -214,3 +214,7 @@ __marimo__/
 
 # DS Store Cache
 **/.DS_Store
+
+# Data directory - ignore all files but keep directory structure
+data/**/*
+!data/**/.gitkeep
