@@ -23,11 +23,11 @@ A collection of tools and prototypical features for a Synthesizer Product. This 
 
 ## Features
 
-- **String Instrument Synthesis**: Simulate plucked string instruments (guitar, ukulele) using the Karplus-Strong algorithm
-- **Chorus Generation**: Create strumming patterns with customizable chord progressions, stroke patterns, and intervals
-- **Streaming Audio**: Real-time audio streaming via FastAPI endpoints
-- **Configurable Presets**: Built-in instrument presets with support for custom tuning, vibration, and damping parameters
-- **Platform-Agnostic Deployment**: Run locally or deploy to cloud platforms (Azure, AWS, GCP) with database flexibility
+- **String Instrument Synthesis**: Physical modeling synthesis for plucked strings (guitar, ukulele) using the Karplus-Strong algorithm
+- **Pattern-Based Playback**: Configure chord progressions, strumming patterns, and timing intervals for realistic string instrument performances
+- **Preset & Custom Instruments**: Use built-in presets or define custom tuning, vibration duration, and damping parameters
+- **Streaming Audio API**: Real-time audio synthesis and streaming via `/strings/playback` endpoint
+- **Platform-Agnostic Deployment**: Run locally with Docker or deploy to cloud platforms (Azure, AWS, GCP) with flexible database options
 
 ## Technologies & References
 

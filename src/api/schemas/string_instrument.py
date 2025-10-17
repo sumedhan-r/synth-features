@@ -1,4 +1,4 @@
-"""Chorus audio generation schemas."""
+"""String instrument playback request schemas."""
 
 from enum import Enum
 from typing import Annotated, Literal, Union
@@ -14,30 +14,43 @@ class InstrumentType(str, Enum):
     CUSTOM = "custom"
 
 
+class StrokeDirection(str, Enum):
+    """Stroke direction for string instruments."""
+
+    UP = "up"
+    DOWN = "down"
+
+
 class StrokeConfig(BaseModel):
     """Configuration for a single stroke."""
 
-    direction: str = Field(..., description="Stroke direction: 'down' or 'up'")
+    direction: StrokeDirection = Field(
+        ..., description="Stroke direction: 'up' or 'down'"
+    )
     milliseconds: float = Field(
         ..., gt=0, description="Stroke duration in milliseconds"
     )
 
 
-class ChordProgression(BaseModel):
-    """Chord progression configuration."""
+class FretPositions(BaseModel):
+    """Fret positions for a single chord."""
 
-    fret_positions: list[int] = Field(
+    positions: list[int] = Field(
         ...,
         description="Fret positions for each string (0 = open string)",
         min_length=4,
-        max_length=4,
+        max_length=6,
+        alias="fret_positions",
     )
 
+    class Config:
+        populate_by_name = True
 
-class StrummingPatternRequest(BaseModel):
-    """Request schema for strumming pattern configuration."""
 
-    chords: list[ChordProgression] = Field(
+class StrummingPattern(BaseModel):
+    """Strumming pattern configuration."""
+
+    chords: list[FretPositions] = Field(
         ...,
         description="List of chords in the progression",
         min_length=1,
@@ -86,7 +99,7 @@ class PresetInstrumentRequest(BaseModel):
         default=InstrumentType.UKULELE,
         description="Type of preset instrument: 'ukulele' or 'guitar'",
     )
-    pattern: StrummingPatternRequest = Field(
+    pattern: StrummingPattern = Field(
         ..., description="Strumming pattern configuration"
     )
 
@@ -135,7 +148,7 @@ class CustomInstrumentRequest(BaseModel):
         le=1.0,
         description="Custom string damping factor",
     )
-    pattern: StrummingPatternRequest = Field(
+    pattern: StrummingPattern = Field(
         ..., description="Strumming pattern configuration"
     )
 
@@ -156,8 +169,8 @@ class CustomInstrumentRequest(BaseModel):
         }
 
 
-# Discriminated union for chorus requests
-ChorusRequest = Annotated[
+# Discriminated union for string playback requests
+StringPlaybackRequest = Annotated[
     Union[
         Annotated[PresetInstrumentRequest, Tag("preset")],
         Annotated[CustomInstrumentRequest, Tag("custom")],
