@@ -7,12 +7,12 @@ from src.api.schemas.chorus import (
     CustomInstrumentRequest,
     InstrumentType,
 )
-from src.api.services.samples import AudioTrack
-from src.tools.instrument.guitar import PluckedStringInstrument, StringTuning
-from src.tools.signals.string_synthesis import StringSynthesizer
-from src.tools.utils.chord import Chord
+from src.tools.audio.track import AudioTrack
+from src.tools.instruments.strings.plucked import PluckedStringInstrument, StringTuning
+from src.tools.synthesis.physical_modeling.karplus_strong import StringSynthesizer
+from src.tools.instruments.strings.chord import Chord
 from src.tools.utils.processing import normalize
-from src.tools.utils.stroke import StrokeVelocity
+from src.tools.instruments.strings.stroke import StrokeVelocity
 from src.tools.utils.temporal import Time, Timeline
 
 

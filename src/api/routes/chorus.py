@@ -6,8 +6,8 @@ from fastapi import APIRouter, Body
 from fastapi.responses import StreamingResponse
 
 from src.api.schemas.chorus import ChorusRequest
-from src.api.services.play_chorus import create_chorus
-from src.api.services.stream import stream_audio
+from src.api.services.string_playback import create_chorus
+from src.api.services.audio_response import stream_audio
 
 router = APIRouter()
 

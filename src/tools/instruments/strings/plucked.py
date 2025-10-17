@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import cache, cached_property
 from typing import Self
 
-from src.tools.utils.chord import Chord
+from src.tools.instruments.strings.chord import Chord
 from src.tools.utils.pitch import Pitch
 from src.tools.utils.temporal import Time
 

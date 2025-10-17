@@ -5,12 +5,12 @@ from typing import Iterator, Sequence
 
 import numpy as np
 
-from src.tools.instrument.guitar import PluckedStringInstrument
-from src.tools.signals.burst import BurstGenerator, WhiteNoise
-from src.tools.utils.chord import Chord
+from src.tools.instruments.strings.plucked import PluckedStringInstrument
+from src.tools.synthesis.input.noise import BurstGenerator, WhiteNoise
+from src.tools.instruments.strings.chord import Chord
 from src.tools.utils.temporal import Hertz, Time
 from src.tools.utils.processing import remove_dc, normalize
-from src.tools.utils.stroke import StrokeDirection, StrokeVelocity
+from src.tools.instruments.strings.stroke import StrokeDirection, StrokeVelocity
 from src.api.core.constant import AUDIO_CD_SAMPLING_RATE
 
 
