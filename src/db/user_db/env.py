@@ -6,7 +6,12 @@ from sqlalchemy import create_engine, engine_from_config, pool
 from sqlalchemy.exc import OperationalError
 
 from src.api.core.logger import get_logger
+
 from src.db.user_db.models.base import Base
+from src.db.user_db.models.event import Event  # noqa: F401
+from src.db.user_db.models.measure import Measure  # noqa: F401
+from src.db.user_db.models.song import Song  # noqa: F401
+from src.db.user_db.models.track import Track  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

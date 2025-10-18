@@ -7,6 +7,7 @@ from src.api.core.exception import (
     custom_http_exception_handler,
     http_exception_handler,
 )
+from src.api.core.lifespan import lifespan
 from src.api.core.logger import get_logger
 from src.api.core.middleware import (
     CacheControlMiddleware,
@@ -23,7 +24,13 @@ project_config = get_config()
 tracer = setup_tracer()
 logger = get_logger(__name__)
 
-app = FastAPI(title="Synth Features", docs_url=None, redoc_url=None, version="v1.0")
+app = FastAPI(
+    title="Synth Features",
+    docs_url=None,
+    redoc_url=None,
+    version="v1.0",
+    lifespan=lifespan,
+)
 
 
 async def startup_event() -> None:
