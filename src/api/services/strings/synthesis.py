@@ -1,6 +1,6 @@
 """Core synthesis functions for string instruments."""
 
-from typing import Iterator
+from typing import Iterable, Iterator
 
 from src.tools.audio.track import AudioTrack
 from src.tools.instruments.strings.chord import Chord
@@ -13,7 +13,7 @@ from src.tools.utils.temporal import Time
 
 def synthesize_strokes(
     instrument: PluckedStringInstrument,
-    strokes: Iterator[tuple[Time, Chord, StrokeVelocity]],
+    strokes: Iterable[tuple[Time, Chord, StrokeVelocity]],
     chunk_size: int = 8192,
 ) -> Iterator[bytes]:
     """
@@ -24,7 +24,7 @@ def synthesize_strokes(
 
     Args:
         instrument: Configured plucked string instrument
-        strokes: Iterator yielding (instant, chord, velocity) tuples
+        strokes: Iterable of (instant, chord, velocity) tuples
         chunk_size: Size of audio chunks to yield in bytes
 
     Yields:

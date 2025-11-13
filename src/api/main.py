@@ -1,3 +1,4 @@
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
 
@@ -43,15 +44,17 @@ async def shutdown_event() -> None:
 
 app.include_router(api_router)
 
-# Add OpenTelemetry middleware
+# Observability middleware - applied first to trace/log entire request lifecycle
+app.add_middleware(StructuredLoggingMiddleware)
+app.add_middleware(TracingCorrelationMiddleware)
+app.add_middleware(
+    CorrelationIdMiddleware,
+    header_name="X-Correlation-ID",
+    update_request_header=True,
+)
 app.add_middleware(OpenTelemetryMiddleware)  # type: ignore[arg-type]
 
-# Add structured logging middleware (should be early in the stack)
-app.add_middleware(StructuredLoggingMiddleware)
-
-# Add tracing correlation middleware (should be early in the chain)
-app.add_middleware(TracingCorrelationMiddleware)
-
+# Security middleware - enforce security policies and restrictions
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(StrictTransportSecurityMiddleware)
 app.add_middleware(CacheControlMiddleware)

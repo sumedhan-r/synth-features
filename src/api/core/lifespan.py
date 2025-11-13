@@ -3,28 +3,45 @@
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Generator
 
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from src.api.core.logger import get_logger
 
 logger = get_logger(__name__)
 
 
+def _convert_to_async_url(database_url: str) -> str:
+    """
+    Convert sync database URL to async driver URL.
+
+    Args:
+        database_url: Sync database URL
+
+    Returns:
+        Async database URL with appropriate driver
+    """
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+asyncpg://")
+    elif database_url.startswith("mysql://"):
+        return database_url.replace("mysql://", "mysql+aiomysql://")
+    elif database_url.startswith("sqlite://"):
+        return database_url.replace("sqlite://", "sqlite+aiosqlite://")
+    return database_url
+
+
 class ResourceManager:
     """Manages application resources (database connections, etc.)."""
 
     def __init__(self) -> None:
-        self._session_factory: sessionmaker | None = None
-        self._engine: Engine | None = None
+        self._async_session_factory: async_sessionmaker | None = None
+        self._async_engine: AsyncEngine | None = None
 
-    def get_session_factory(self) -> sessionmaker | None:
-        """Get the database session factory."""
-        return self._session_factory
+    def get_async_session_factory(self) -> async_sessionmaker | None:
+        """Get the async database session factory."""
+        return self._async_session_factory
 
     async def init_resources(self) -> None:
         """Initialize application resources (database, etc.)."""
@@ -32,31 +49,36 @@ class ResourceManager:
 
         # Get database URL from environment
         database_url = os.getenv("DATABASE_URL", "sqlite:///./data/synth.db")
-        logger.info(f"Initializing database connection: {database_url}")
+        async_database_url = _convert_to_async_url(database_url)
+        logger.info(f"Initializing async database connection: {async_database_url}")
 
-        # Create engine with appropriate settings
-        connect_args = (
-            {"check_same_thread": False} if database_url.startswith("sqlite") else {}
-        )
-        self._engine = create_engine(database_url, connect_args=connect_args)
-
-        # Create session factory
-        self._session_factory = sessionmaker(
-            autocommit=False, autoflush=False, bind=self._engine
+        # Create async engine
+        self._async_engine = create_async_engine(
+            async_database_url,
+            echo=False,
+            pool_pre_ping=True,  # Verify connections before using
         )
 
-        logger.info("Database connection initialized")
+        # Create async session factory
+        self._async_session_factory = async_sessionmaker(
+            self._async_engine,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+
+        logger.info("Async database connection initialized")
 
     async def close_resources(self) -> None:
         """Close and cleanup application resources."""
         logger.info("Closing resources...")
 
-        if self._engine:
-            self._engine.dispose()
-            logger.info("Database connections closed")
+        if self._async_engine:
+            await self._async_engine.dispose()
+            logger.info("Async database connections closed")
 
-        self._session_factory = None
-        self._engine = None
+        self._async_session_factory = None
+        self._async_engine = None
 
         logger.info("All resources closed")
 
@@ -78,25 +100,19 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     await resource_manager.close_resources()
 
 
-def get_db() -> Generator[Session, None, None]:
+def get_async_session_factory() -> async_sessionmaker:
     """
-    Dependency that provides a database session.
+    Get the async session factory.
 
-    Yields:
-        Database session
+    Returns:
+        Async session factory
 
-    Example:
-        @app.get("/items")
-        def read_items(db: Session = Depends(get_db)):
-            return db.query(Item).all()
+    Raises:
+        RuntimeError: If database not initialized
     """
-    session_factory = resource_manager.get_session_factory()
+    session_factory = resource_manager.get_async_session_factory()
 
     if session_factory is None:
         raise RuntimeError("Database not initialized. Ensure lifespan is configured.")
 
-    db = session_factory()
-    try:
-        yield db
-    finally:
-        db.close()
+    return session_factory

@@ -1,7 +1,8 @@
 import time
-import uuid
 from collections.abc import Awaitable, Callable
+from typing import Any
 
+from asgi_correlation_id import correlation_id
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -73,14 +74,14 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         # Extract correlation ID from headers (set by TracingCorrelationMiddleware)
-        correlation_id = request.headers.get("x-correlation-id")
+        corr_id = correlation_id.get()
 
         # Clear any existing context
         clear_context()
 
         # Bind request context
         bind_context(
-            correlation_id=correlation_id,
+            correlation_id=corr_id,
             method=request.method,
             path=request.url.path,
         )
@@ -92,7 +93,7 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
             "Request started",
             method=request.method,
             path=request.url.path,
-            correlation_id=correlation_id,
+            correlation_id=corr_id,
         )
 
         try:
@@ -108,7 +109,7 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "process_time_ms": round(process_time * 1000, 2),
-                "correlation_id": correlation_id,
+                "correlation_id": corr_id,
             }
 
             # Add error_code if it's a CustomHTTPException
@@ -126,7 +127,7 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
                 "Request completed",
                 status_code=response.status_code,
                 process_time_ms=round(process_time * 1000, 2),
-                correlation_id=correlation_id,
+                correlation_id=corr_id,
             )
 
             return response
@@ -143,18 +144,10 @@ class TracingCorrelationMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         # Generate or extract correlation ID
-        correlation_id = request.headers.get("x-correlation-id") or str(uuid.uuid4())
-        request_id = str(uuid.uuid4())
+        corr_id = correlation_id.get()
 
         # Set correlation context
-        correlation_context = {
-            "correlation_id": correlation_id,
-            "request_id": request_id,
-            "http.method": request.method,
-            "http.url": str(request.url),
-            "http.route": request.url.path,
-            "http.user_agent": request.headers.get("user-agent", ""),
-        }
+        correlation_context: dict[str, Any] = {"correlation_id": corr_id}
 
         # Set request context for the duration of this request
         set_request_context(**correlation_context)
@@ -174,10 +167,6 @@ class TracingCorrelationMiddleware(BaseHTTPMiddleware):
                     "request.success": response.status_code < HTTP_400_BAD_REQUEST,
                 }  # type: ignore[arg-type]
             )
-
-            # Add correlation ID to response headers
-            response.headers["x-correlation-id"] = correlation_id
-            response.headers["x-request-id"] = request_id
 
         except Exception as e:
             processing_time = time.time() - start_time

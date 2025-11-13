@@ -4,8 +4,6 @@ import json
 from fractions import Fraction
 from typing import Iterator
 
-from sqlalchemy.orm import Session
-
 from src.api.core.exceptions.strings import StringSongNoMeasuresHTTPException
 from src.api.services.storages.string_songs import SongStorage
 from src.api.services.strings.instrument_factory import create_instrument_from_track
@@ -30,26 +28,25 @@ def _calculate_note_duration(note_duration_str: str, beat_duration: Time) -> Tim
     return beat_duration * (fraction * 4)  # Multiply by 4 to normalize to quarter note
 
 
-def _build_track_strokes(
-    db: Session, song_id: int, track_id: int
-) -> Iterator[tuple[Time, Chord, StrokeVelocity]]:
+async def _build_track_strokes(
+    song_id: int, track_id: int
+) -> list[tuple[Time, Chord, StrokeVelocity]]:
     """
     Build strokes with timeline from track's measures and events.
 
     Args:
-        db: Database session
         song_id: Song ID
         track_id: Track ID
 
-    Yields:
-        Tuple of (instant, chord, stroke_velocity)
+    Returns:
+        List of (instant, chord, stroke_velocity) tuples
 
     Raises:
         StringSongNotFoundHTTPException: If song not found
         StringSongNoMeasuresHTTPException: If track has no measures
     """
     # Fetch song with all tracks and their data
-    song = SongStorage.get_with_tracks(db, song_id)
+    song = await SongStorage.get_with_tracks(song_id)
 
     # Find the specific track
     track = next((t for t in song.tracks if t.id == track_id), None)
@@ -65,6 +62,9 @@ def _build_track_strokes(
 
     # Create timeline with measure tracking
     timeline = MeasuredTimeline(measure=measure_duration)
+
+    # Build list of strokes
+    strokes: list[tuple[Time, Chord, StrokeVelocity]] = []
 
     # Process each measure in order
     for measure_model in sorted(track.measures, key=lambda m: m.measure_number):
@@ -92,23 +92,24 @@ def _build_track_strokes(
             else:
                 velocity = StrokeVelocity.up(stroke_time)
 
-            # Yield stroke with current instant
-            yield timeline.instant, chord, velocity
+            # Add stroke with current instant
+            strokes.append((timeline.instant, chord, velocity))
 
             # Advance timeline by note duration
             note_duration_str: str = event_model.note_duration  # type: ignore[assignment]
             note_duration = _calculate_note_duration(note_duration_str, beat_duration)
             timeline >> note_duration
 
+    return strokes
 
-def synthesize_song_audio(
-    db: Session, song_id: int, track_id: int, chunk_size: int = 8192
+
+async def synthesize_song_audio(
+    song_id: int, track_id: int, chunk_size: int = 8192
 ) -> Iterator[bytes]:
     """
     Synthesize a single track from a song and yield audio chunks.
 
     Args:
-        db: Database session
         song_id: Song ID
         track_id: Track ID to synthesize
         chunk_size: Size of audio chunks to yield in bytes
@@ -121,7 +122,7 @@ def synthesize_song_audio(
         StringSongNoMeasuresHTTPException: If track has no measures
     """
     # Fetch song with tracks to get the specific track
-    song = SongStorage.get_with_tracks(db, song_id)
+    song = await SongStorage.get_with_tracks(song_id)
 
     # Find the specific track
     track = next((t for t in song.tracks if t.id == track_id), None)
@@ -132,7 +133,7 @@ def synthesize_song_audio(
     instrument = create_instrument_from_track(track)
 
     # Build strokes from track's measures and events
-    strokes = _build_track_strokes(db, song_id, track_id)
+    strokes = await _build_track_strokes(song_id, track_id)
 
     # Use shared synthesis function
     return synthesize_strokes(instrument, strokes, chunk_size)

@@ -178,6 +178,25 @@ doc = ["doc8", "sphinx (>=7.0.0)", "sphinx-autobuild", "sphinx-autodoc-typehints
 test = ["dateparser (==1.*)", "pre-commit", "pytest", "pytest-cov", "pytest-mock", "pytz (==2021.1)", "simplejson (==3.*)"]
 
 [[package]]
+name = "asgi-correlation-id"
+version = "4.3.4"
+description = "Middleware correlating project logs to individual requests"
+optional = false
+python-versions = "<4.0,>=3.8"
+groups = ["main"]
+files = [
+    {file = "asgi_correlation_id-4.3.4-py3-none-any.whl", hash = "sha256:36ce69b06c7d96b4acb89c7556a4c4f01a972463d3d49c675026cbbd08e9a0a2"},
+    {file = "asgi_correlation_id-4.3.4.tar.gz", hash = "sha256:ea6bc310380373cb9f731dc2e8b2b6fb978a76afe33f7a2384f697b8d6cd811d"},
+]
+
+[package.dependencies]
+packaging = "*"
+starlette = ">=0.18"
+
+[package.extras]
+celery = ["celery"]
+
+[[package]]
 name = "asgiref"
 version = "3.9.2"
 description = "ASGI specs, helper code, and adapters"
@@ -5739,4 +5758,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "cbe21dfefa3ef30d260c206057aea05b659f545b2e0461a7a7c12a4e362e9307"
+content-hash = "df748f15f9bdb48c03f1ac14d6800647a7ef917cba2434270d6faf2d7a7c5036"
