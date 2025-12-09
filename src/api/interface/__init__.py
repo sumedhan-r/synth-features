@@ -1,0 +1,1 @@
+"""Interface folder contains the Abstract class for components such as Database, Cache, Storage."""

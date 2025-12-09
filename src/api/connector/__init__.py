@@ -1,0 +1,1 @@
+"""Connector contains the vendor or in-house implementation of given component."""

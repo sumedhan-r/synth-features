@@ -1,0 +1,1 @@
+"""External Services takes responsibility to call API endpoints belonging to a system outside the scope of current system."""

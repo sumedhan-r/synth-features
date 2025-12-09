@@ -1,0 +1,1 @@
+"""Schemas contain class models for API endpoint calls as well as intermediate interactions/transactions."""
